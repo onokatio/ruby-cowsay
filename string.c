@@ -11863,6 +11863,29 @@ rb_str_to_interned_str(VALUE str)
 }
 
 VALUE
+rb_str_cowsay(VALUE self)
+{
+    char *ptr;
+    long len;
+    RSTRING_GETMEM(self, ptr, len);
+    char *frame_head = " ________________________\n< ";
+    char *frame_bottom =
+        " >\n------------------------\n"
+        "        \\   ^__^\n"
+        "         \\  (oo)\\_______\n"
+        "            (__)\\       )\\/\\ \n"
+        "                ||----w |\n"
+        "                ||     ||\n";
+    long len2 = strlen(frame_head) + len + strlen(frame_bottom);
+    VALUE result = str_new0(rb_cString, 0, len2, (int)len2);
+    char *ptr2 = RSTRING_PTR(result);
+    memcpy(ptr2, frame_head, strlen(frame_head));
+    memcpy(ptr2+strlen(frame_head), ptr, len);
+    memcpy(ptr2+strlen(frame_head)+len, frame_bottom, strlen(frame_bottom));
+    return result;
+}
+
+VALUE
 rb_interned_str(const char *ptr, long len)
 {
     struct RString fake_str;
@@ -12047,6 +12070,7 @@ Init_String(void)
     rb_define_method(rb_cString, "b", rb_str_b, 0);
     rb_define_method(rb_cString, "valid_encoding?", rb_str_valid_encoding_p, 0);
     rb_define_method(rb_cString, "ascii_only?", rb_str_is_ascii_only_p, 0);
+    rb_define_method(rb_cString, "cowsay", rb_str_cowsay, 0);
 
     /* define UnicodeNormalize module here so that we don't have to look it up */
     mUnicodeNormalize          = rb_define_module("UnicodeNormalize");
